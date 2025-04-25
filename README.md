@@ -2,6 +2,8 @@
 
 Super simple static site generator using markdown for the source files, ruby for HTML file generation, and nginx for hosting.
 
+This blog will be hosted at https://dycksoft.com/blog.
+
 ## Layout
 
 All posts will be stored in the `src` directory as the raw markdown files, which is what they will be written in by default. 
