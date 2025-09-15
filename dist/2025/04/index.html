@@ -1,7 +1,7 @@
  <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title> Hello World</title>
+    <title>{title}</title>
 
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1, width=device-width">
@@ -10,19 +10,12 @@
   </head>
 
   <body>
-    <header>
-      <h1> Hello World</h1>
-      <span>Published:  2025-04-24</span>
-    </header>
-
     <main>
-      <p>First entry in the blog?</p>
-
+      <a href="{parent_link}">{parent_title}</a>
+      <ul>
+        {children}
+      </ul>
     </main>
-
-    <footer>
-      <!-- TODO: previous/next entry -->
-    </footer>
   </body>
 
 </html> 

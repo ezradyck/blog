@@ -6,17 +6,15 @@ ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
 require "bundler/setup" # Set up gems listed in the Gemfile.
 
 require 'redcarpet'
+require_relative '../lib/generator.rb'
+require_relative '../lib/file_locations.rb'
 
-def traverse(dir, markdown)
-  src_base = File.expand_path("../src", __dir__)
-  dist_base = File.expand_path("../dist", __dir__)
-
-  Dir.each_child(File.join(src_base, dir)) do |entry|
-    
+def traverse(dir, generator)
+  Dir.each_child(File.join(FileLocations::Src, dir)) do |entry|
     child_path = File.join(dir, entry)
-    abs_child_path = File.join(src_base, child_path)
+    abs_child_path = File.join(FileLocations::Src, child_path)
 
-    dist_child_path = File.join(dist_base, child_path)
+    dist_child_path = File.join(FileLocations::Dist, child_path)
 
     if Dir.exist?(abs_child_path)
 
@@ -24,46 +22,17 @@ def traverse(dir, markdown)
         Dir.mkdir(dist_child_path)
       end
 
-      traverse(child_path, markdown)
+      generator.gen_directory_index(dist_child_path, abs_child_path, child_path)
+      traverse(child_path, generator)
 
     elsif File.exist?(abs_child_path) && File.readable?(abs_child_path)
-
-      post_content = File.read(abs_child_path)
-
-      # parse out header block
-
-      # 9 chars for "```header"
-      header_end_pos = post_content.index('```', 9)
-      header = post_content[10...header_end_pos]
-
-      props = Hash[header.lines.collect do |line| 
-        idx = line.index(':')
-        key = line[0...idx]
-        value = line[(idx + 1)..].sub! "\n", ""
-        [ key, value ]
-      end]
-
-      post_content = post_content[(header_end_pos + 3)..]
-
-      md = markdown.render(post_content)
-
-      # TODO: encode header and footer in md file, and parse out before parsing to HTML
-
-      layout = File.read(File.expand_path("../layout/layout.html", __dir__))
-      layout.sub! "{content}", md
-      layout.sub! "{title}", props["title"]
-
-      dist_child_path.sub! ".md", ".html"
-
-      f = File.new(dist_child_path, 'w')
-      f.write(layout)
-
-      puts "Finished processing #{child_path}"
-
+      generator.gen_post(dist_child_path, abs_child_path, child_path)
     end
   end
 end
 
 markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML)
 
-traverse('', markdown)
+generator = Blog::Generator.new(markdown)
+
+traverse('', generator)
